@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+staticfiles/
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Secrets & local config (§38)
+.env
+.env.*
+!.env.example
+
+# OS/editor
+.DS_Store
+*.swp
