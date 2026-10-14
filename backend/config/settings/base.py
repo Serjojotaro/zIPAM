@@ -35,8 +35,15 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.postgres",
     "rest_framework",
-    "core",
+    "apps.accounts",
+    "apps.organizations",
+    "apps.sites",
+    "apps.vrfs",
+    "apps.vlans",
+    "apps.prefixes",
+    "apps.ip_addresses",
 ]
 
 MIDDLEWARE = [
@@ -97,6 +104,8 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ],
     "EXCEPTION_HANDLER": "core.exceptions.handlers.api_exception_handler",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
 }
 
 LANGUAGE_CODE = "en-us"

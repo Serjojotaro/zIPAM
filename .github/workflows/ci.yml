@@ -41,7 +41,7 @@ jobs:
           cache-dependency-path: backend/requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: ruff check .
-      - run: mypy config core tests
+      - run: mypy config core apps
       - run: pytest -q
 
   frontend:
