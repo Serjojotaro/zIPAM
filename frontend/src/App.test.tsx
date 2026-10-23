@@ -34,6 +34,7 @@ describe("App", () => {
   });
 
   it("shows reference data for an authenticated user", async () => {
+    window.history.pushState({}, "", "/organizations");
     mockFetch((url) => {
       if (url.startsWith("/api/v1/auth/me")) {
         return { status: 200, body: { username: "ops", roles: ["operator"] } };

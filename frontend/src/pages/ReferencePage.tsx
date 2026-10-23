@@ -18,15 +18,21 @@ interface ReferencePageConfig {
     label: string;
     optionsEndpoint: string;
   };
+  extraField?: {
+    field: string;
+    label: string;
+    type: "text" | "number";
+  };
 }
 
 interface FormState {
   name: string;
   description: string;
   foreignKey: string;
+  extra: string;
 }
 
-const EMPTY_FORM: FormState = { name: "", description: "", foreignKey: "" };
+const EMPTY_FORM: FormState = { name: "", description: "", foreignKey: "", extra: "" };
 
 export function ReferencePage({ config }: { config: ReferencePageConfig }) {
   const { hasRole } = useAuth();
@@ -64,15 +70,21 @@ export function ReferencePage({ config }: { config: ReferencePageConfig }) {
 
   const startEdit = (item: ReferenceRecord) => {
     setEditingId(item.id);
+    const raw = item as unknown as Record<string, unknown>;
     const fkField = config.foreignKey?.field;
-    const fkValue = fkField === undefined ? "" : String((item as unknown as Record<string, unknown>)[fkField] ?? "");
-    setForm({ name: item.name, description: item.description, foreignKey: fkValue });
+    const fkValue = fkField === undefined ? "" : String(raw[fkField] ?? "");
+    const extraValue = config.extraField === undefined ? "" : String(raw[config.extraField.field] ?? "");
+    setForm({ name: item.name, description: item.description, foreignKey: fkValue, extra: extraValue });
   };
 
   const payload = (): Record<string, unknown> => {
     const data: Record<string, unknown> = { name: form.name, description: form.description };
     if (config.foreignKey) {
       data[config.foreignKey.field] = form.foreignKey === "" ? null : Number(form.foreignKey);
+    }
+    if (config.extraField) {
+      data[config.extraField.field] =
+        config.extraField.type === "number" ? Number(form.extra) : form.extra;
     }
     return data;
   };
@@ -129,6 +141,22 @@ export function ReferencePage({ config }: { config: ReferencePageConfig }) {
               className="mt-1 w-64 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm"
             />
           </div>
+          {config.extraField && (
+            <div>
+              <label htmlFor="ref-extra" className="block text-xs text-zinc-400">
+                {config.extraField.label}
+              </label>
+              <input
+                id="ref-extra"
+                required
+                type={config.extraField.type === "number" ? "number" : "text"}
+                min={config.extraField.type === "number" ? 1 : undefined}
+                value={form.extra}
+                onChange={(e) => setForm({ ...form, extra: e.target.value })}
+                className="mt-1 w-32 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm"
+              />
+            </div>
+          )}
           {config.foreignKey && (
             <div>
               <label htmlFor="ref-fk" className="block text-xs text-zinc-400">
@@ -172,6 +200,7 @@ export function ReferencePage({ config }: { config: ReferencePageConfig }) {
         <thead className="border-b border-zinc-800 text-xs uppercase text-zinc-500">
           <tr>
             <th className="py-2 pr-4">Name</th>
+            {config.extraField && <th className="py-2 pr-4">{config.extraField.label}</th>}
             <th className="py-2 pr-4">Description</th>
             <th className="py-2 text-right">Actions</th>
           </tr>
@@ -180,6 +209,11 @@ export function ReferencePage({ config }: { config: ReferencePageConfig }) {
           {items.map((item) => (
             <tr key={item.id} className="border-b border-zinc-900">
               <td className="py-2 pr-4">{item.name}</td>
+              {config.extraField && (
+                <td className="py-2 pr-4 font-mono text-zinc-300">
+                  {String((item as unknown as Record<string, unknown>)[config.extraField.field] ?? "")}
+                </td>
+              )}
               <td className="py-2 pr-4 text-zinc-400">{item.description}</td>
               <td className="py-2 text-right">
                 {canWrite && (
@@ -205,7 +239,7 @@ export function ReferencePage({ config }: { config: ReferencePageConfig }) {
           ))}
           {items.length === 0 && (
             <tr>
-              <td colSpan={3} className="py-4 text-zinc-500">
+              <td colSpan={config.extraField ? 4 : 3} className="py-4 text-zinc-500">
                 No records.
               </td>
             </tr>

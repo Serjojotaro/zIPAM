@@ -2,11 +2,29 @@
 import { NavLink, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/context";
 
-const NAV_ITEMS = [
-  { to: "/organizations", label: "Organizations" },
-  { to: "/tenants", label: "Tenants" },
-  { to: "/regions", label: "Regions" },
-  { to: "/sites", label: "Sites" },
+const NAV_SECTIONS = [
+  {
+    title: "IPAM",
+    items: [
+      { to: "/prefixes", label: "Prefixes" },
+      { to: "/ip-addresses", label: "IP Addresses" },
+      { to: "/vrfs", label: "VRFs" },
+      { to: "/vlans", label: "VLANs" },
+    ],
+  },
+  {
+    title: "Reference",
+    items: [
+      { to: "/organizations", label: "Organizations" },
+      { to: "/tenants", label: "Tenants" },
+      { to: "/regions", label: "Regions" },
+      { to: "/sites", label: "Sites" },
+    ],
+  },
+  {
+    title: "Tools",
+    items: [{ to: "/search", label: "Search" }],
+  },
 ];
 
 export function RequireAuth() {
@@ -25,18 +43,25 @@ export function Layout() {
     <div className="flex min-h-screen bg-zinc-950 text-zinc-100">
       <aside className="flex w-56 flex-col gap-1 border-r border-zinc-800 p-4">
         <div className="mb-4 text-xl font-semibold tracking-tight">zIPAM</div>
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `rounded px-3 py-1.5 text-sm ${
-                isActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"
-              }`
-            }
-          >
-            {item.label}
-          </NavLink>
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.title}>
+            <div className="px-3 pb-1 pt-3 text-xs uppercase tracking-wide text-zinc-600">
+              {section.title}
+            </div>
+            {section.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `block rounded px-3 py-1.5 text-sm ${
+                    isActive ? "bg-zinc-800 text-white" : "text-zinc-400 hover:bg-zinc-900"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         ))}
         <div className="mt-auto text-xs text-zinc-500">
           <div>
