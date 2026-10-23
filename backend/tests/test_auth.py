@@ -10,10 +10,7 @@ from tests.factories import make_role_user
 
 @pytest.mark.django_db
 def test_login_success_sets_session(client: Client) -> None:
-    make_role_user("operator")  # placeholder to ensure groups exist
-    from django.contrib.auth.models import User
-
-    user = User.objects.get(username="user0")
+    user = make_role_user("operator")
     response = client.post(
         "/api/v1/auth/login",
         data=json.dumps({"username": user.username, "password": "test-pass-123"}),
@@ -27,10 +24,10 @@ def test_login_success_sets_session(client: Client) -> None:
 
 @pytest.mark.django_db
 def test_login_wrong_password_401(client: Client) -> None:
-    make_role_user("viewer")
+    user = make_role_user("viewer")
     response = client.post(
         "/api/v1/auth/login",
-        data=json.dumps({"username": "user0", "password": "wrong"}),
+        data=json.dumps({"username": user.username, "password": "wrong"}),
         content_type="application/json",
     )
     assert response.status_code == 401

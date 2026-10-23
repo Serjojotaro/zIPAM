@@ -4,15 +4,11 @@
 
 from __future__ import annotations
 
+from core.exceptions.domain import DomainError
 
-class IPAllocationError(Exception):
+
+class IPAllocationError(DomainError):
     code = "IP_ALLOCATION_ERROR"
-
-    def __init__(self, message: str, *, details: dict[str, object] | None = None) -> None:
-        super().__init__(message)
-        self.message = message
-        self.details: dict[str, object] = details or {}
-
 
 class IPAlreadyAllocatedError(IPAllocationError):
     code = "IP_ALREADY_ALLOCATED"

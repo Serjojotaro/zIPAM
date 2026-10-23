@@ -100,6 +100,30 @@ def reserve_ip(vrf: VRF, address: str, *, description: str = "") -> IPAddress:
     return ip
 
 
+def assign_ip(
+    vrf: VRF,
+    address: str,
+    *,
+    status: str = IPAddressStatus.ACTIVE,
+    description: str = "",
+) -> IPAddress:
+    """Explicit allocation of a specific address (API POST). Same DB
+    uniqueness guarantee as reserve_ip; any status."""
+    try:
+        parsed = ipaddress.ip_address(str(address).strip())
+    except ValueError as exc:
+        raise IPInvalidError(f"Invalid IP address {address!r}.") from exc
+    ip = IPAddress(vrf=vrf, address=str(parsed), status=status, description=description)
+    try:
+        with transaction.atomic():
+            ip.save()
+    except IntegrityError as exc:
+        raise IPAlreadyAllocatedError(
+            f"Address {parsed} is already present in VRF {vrf.name}."
+        ) from exc
+    return ip
+
+
 def release_ip(ip: IPAddress) -> bool:
     """Free an address (delete the allocation row; audit arrives in rc-02)."""
     _, deleted = ip.delete()

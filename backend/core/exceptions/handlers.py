@@ -4,8 +4,18 @@
 
 from typing import Any
 
+from django.db.models import ProtectedError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+from core.exceptions.domain import DomainError
+
+# Stable domain code → HTTP status (§17); unknown domain codes default to 409.
+_DOMAIN_STATUS = {
+    "PREFIX_INVALID": 400,
+    "PREFIX_SPLIT_INVALID": 400,
+    "IP_INVALID": 400,
+}
 
 
 def _stable_code(exc: object, status: int) -> str:
@@ -16,6 +26,30 @@ def _stable_code(exc: object, status: int) -> str:
 
 
 def api_exception_handler(exc: Exception, context: dict[str, Any]) -> Response | None:
+    if isinstance(exc, DomainError):
+        return Response(
+            {
+                "error": {
+                    "code": exc.code,
+                    "message": exc.message,
+                    "details": exc.details,
+                }
+            },
+            status=_DOMAIN_STATUS.get(exc.code, 409),
+        )
+    if isinstance(exc, ProtectedError):
+        return Response(
+            {
+                "error": {
+                    "code": "REFERENCE_PROTECTED",
+                    "message": "Object is referenced by other objects and cannot be deleted.",
+                    "details": {
+                        "protected_objects": [str(obj) for obj in list(exc.protected_objects)[:10]],
+                    },
+                }
+            },
+            status=409,
+        )
     response = exception_handler(exc, context)
     if response is None:
         return None
